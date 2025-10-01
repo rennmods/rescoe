@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { dailySchedules } from '../data';
-import AOS from 'aos';
 import 'aos/dist/aos.css';
 
 const Schedule = () => {
