@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { dailySchedules } from '../data';
+import AOS from 'aos';    
 import 'aos/dist/aos.css';
 
 const Schedule = () => {
@@ -12,6 +13,8 @@ const Schedule = () => {
   });
 
   useEffect(() => {
+    // Init AOS untuk animasi
+    AOS.init();
     // getDay() mengembalikan 0 untuk Minggu, 1 untuk Senin, dst.
     // Kita sesuaikan agar Senin = 0, ..., Minggu = 6
     const dayIndex = (new Date().getDay() + 6) % 7; 
