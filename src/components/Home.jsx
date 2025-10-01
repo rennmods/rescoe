@@ -23,7 +23,7 @@ const Home = ({ className }) => {
     }, 200);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [fullText]);
 
   return (
     <header
