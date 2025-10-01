@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes glow-pulse {
+  0%, 100% {
+    /* Cahaya awal yang lebih tajam */
+    text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff;
+  }
+  50% {
+    /* Cahaya yang lebih menyebar dan lembut di tengah animasi */
+    text-shadow: 0 0 10px #fff, 0 0 20px #e0e0e0, 0 0 35px #e0e0e0;
+  }
+}
+
+/* Kelas (class) yang akan kita gunakan pada teks */
+.text-glow {
+  /* Menerapkan animasi 'glow-pulse' */
+  animation: glow-pulse 3s ease-in-out infinite;
+}
