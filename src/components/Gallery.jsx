@@ -9,7 +9,7 @@ const Gallery = () => {
   const [index, setIndex] = useState(0);
 
   const fetchApprovedImages = async () => {
-    const { data, error } = await supabase
+    const { data, loading } = await supabase
       .from('image_requests')
       .select('image_path')
       .eq('status', 'approved');
