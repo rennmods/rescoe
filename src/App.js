@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from './supabaseClient';
-import AOS from 'aos';
-import 'aos/dist/aos.css'; 
+import React, { useState, useEffect } from "react";
+import { supabase } from "./supabaseClient";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
-import Home from './components/Home';
-import Header from './components/Header';
-import TabsView from './components/TabsView';
-import AdminPanel from './components/AdminPanel';
-import ImageUpload from './components/ImageUpload';
-import Gallery from './components/Gallery';
-import Footer from './components/Footer';
-import LoginPage from './components/LoginPage';
-import { teacher } from './data';
+import Home from "./components/Home";
+import Header from "./components/Header";
+import TabsView from "./components/TabsView";
+import MessageForm from "./components/MessageForm";
+import MessageList from "./components/MessageList";
+import AdminPanel from "./components/AdminPanel";
+import ImageUpload from "./components/ImageUpload";
+import Gallery from "./components/Gallery";
+import Footer from "./components/Footer";
+import LoginPage from "./components/LoginPage";
+import { teacher } from "./data";
 
 function App() {
   const [session, setSession] = useState(null);
@@ -26,7 +28,7 @@ function App() {
       const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       if (session) {
-        setUserEmail(session.user.email); // simpan email user
+        setUserEmail(session.user.email);
         await checkIfAdmin(session.user.id);
       }
       setLoading(false);
@@ -34,36 +36,35 @@ function App() {
 
     setupSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session) {
-        setUserEmail(session.user.email);
-        checkIfAdmin(session.user.id);
-      } else {
-        setIsAdmin(false);
-        setUserEmail(null);
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        if (session) {
+          setUserEmail(session.user.email);
+          checkIfAdmin(session.user.id);
+        } else {
+          setIsAdmin(false);
+          setUserEmail(null);
+        }
       }
-    });
+    );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, []);
-
 
   const checkIfAdmin = async (userId) => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error && error.code !== "PGRST116") throw error;
 
-      if (data && data.role === 'admin') {
-        setIsAdmin(true);
-      } else {
-        setIsAdmin(false);
-      }
+      setIsAdmin(data?.role === "admin");
     } catch (error) {
       console.error("Error checking admin status:", error);
       setIsAdmin(false);
@@ -76,7 +77,11 @@ function App() {
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
+        Loading...
+      </div>
+    );
   }
 
   if (!session) {
@@ -84,34 +89,45 @@ function App() {
   }
 
   return (
-  <div className="min-h-screen bg-gray-900 text-white font-sans">
-    {/* Tombol logout */}
-    <div className="absolute top-6 right-6 z-50 flex flex-col items-end space-y-2">
-      {userEmail && (
-        <div className="bg-gray-800/70 px-4 py-2 rounded-lg text-sm sm:text-base shadow-md backdrop-blur-sm">
-          <p className="text-white font-medium">{userEmail}</p>
-          <p className="text-cyan-400 font-bold text-xs sm:text-sm">
-            {isAdmin ? "Admin" : "Member"}
-          </p>
-        </div>
-      )}
-      <button
-        onClick={handleLogout}
-        className="bg-red-600/80 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition"
-      >
-        Logout
-      </button>
-    </div>
+    <div className="min-h-screen bg-gray-900 text-white font-sans">
+      {/* Info user + logout */}
+      <div className="absolute top-6 right-6 z-50 flex flex-col items-end space-y-2">
+        {userEmail && (
+          <div className="bg-gray-800/70 px-4 py-2 rounded-lg text-sm sm:text-base shadow-md backdrop-blur-sm">
+            <p className="text-white font-medium">{userEmail}</p>
+            <p className="text-cyan-400 font-bold text-xs sm:text-sm">
+              {isAdmin ? "Admin" : "Member"}
+            </p>
+          </div>
+        )}
+        <button
+          onClick={handleLogout}
+          className="bg-red-600/80 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition"
+        >
+          Logout
+        </button>
+      </div>
 
+      {/* Main content */}
       <Home className={teacher.class} />
-      
+
       <div id="content" className="container mx-auto px-4 sm:px-6 md:px-8">
-        <Header teacherName={teacher.name} className="Our Class" />
+        <Header teacherName={teacher.name} title="Our Class" />
         <main>
           <TabsView />
+
+          {/* Admin only */}
           {isAdmin && <AdminPanel />}
+
+          {/* Upload foto */}
           <ImageUpload />
+
+          {/* Galeri foto */}
           <Gallery />
+
+          {/* Fitur NGL: Pesan Anonim */}
+          <MessageForm />
+          <MessageList />
         </main>
       </div>
 
@@ -121,3 +137,4 @@ function App() {
 }
 
 export default App;
+
