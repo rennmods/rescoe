@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
+// Components
 import Home from "./components/Home";
 import Header from "./components/Header";
 import TabsView from "./components/TabsView";
@@ -13,6 +15,7 @@ import ImageUpload from "./components/ImageUpload";
 import Gallery from "./components/Gallery";
 import Footer from "./components/Footer";
 import LoginPage from "./components/LoginPage";
+import ResetPassword from "./components/ResetPassword"; 
 import { teacher } from "./data";
 
 function App() {
@@ -36,22 +39,20 @@ function App() {
 
     setupSession();
 
-    const { data: subscription } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        if (session) {
-          setUserEmail(session.user.email);
-          checkIfAdmin(session.user.id);
-        } else {
-          setIsAdmin(false);
-          setUserEmail(null);
-        }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) {
+        setUserEmail(session.user.email);
+        checkIfAdmin(session.user.id);
+      } else {
+        setIsAdmin(false);
+        setUserEmail(null);
       }
-    );
+    });
 
-    return () => {
-      subscription?.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const checkIfAdmin = async (userId) => {
@@ -64,7 +65,11 @@ function App() {
 
       if (error && error.code !== "PGRST116") throw error;
 
-      setIsAdmin(data?.role === "admin");
+      if (data && data.role === "admin") {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
     } catch (error) {
       console.error("Error checking admin status:", error);
       setIsAdmin(false);
@@ -84,57 +89,65 @@ function App() {
     );
   }
 
-  if (!session) {
-    return <LoginPage />;
-  }
-
   return (
-    <div className="min-h-screen bg-gray-900 text-white font-sans">
-      {/* Info user + logout */}
-      <div className="absolute top-6 right-6 z-50 flex flex-col items-end space-y-2">
-        {userEmail && (
-          <div className="bg-gray-800/70 px-4 py-2 rounded-lg text-sm sm:text-base shadow-md backdrop-blur-sm">
-            <p className="text-white font-medium">{userEmail}</p>
-            <p className="text-cyan-400 font-bold text-xs sm:text-sm">
-              {isAdmin ? "Admin" : "Member"}
-            </p>
-          </div>
-        )}
-        <button
-          onClick={handleLogout}
-          className="bg-red-600/80 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition"
-        >
-          Logout
-        </button>
-      </div>
+    <Router>
+      <Routes>
+        {/* Login / SignUp */}
+        <Route
+          path="/login"
+          element={session ? <Navigate to="/" /> : <LoginPage />}
+        />
 
-      {/* Main content */}
-      <Home className={teacher.class} />
+        {/* Reset password */}
+        <Route path="/reset-password" element={<ResetPassword />} />
 
-      <div id="content" className="container mx-auto px-4 sm:px-6 md:px-8">
-        <Header teacherName={teacher.name} title="Our Class" />
-        <main>
-          <TabsView />
+        {/* Main App */}
+        <Route
+          path="/"
+          element={
+            !session ? (
+              <Navigate to="/login" />
+            ) : (
+              <div className="min-h-screen bg-gray-900 text-white font-sans">
+                {/* Info user & Logout */}
+                <div className="absolute top-6 right-6 z-50 flex flex-col items-end space-y-2">
+                  {userEmail && (
+                    <div className="bg-gray-800/70 px-4 py-2 rounded-lg text-sm sm:text-base shadow-md backdrop-blur-sm">
+                      <p className="text-white font-medium">{userEmail}</p>
+                      <p className="text-cyan-400 font-bold text-xs sm:text-sm">
+                        {isAdmin ? "Admin" : "Member"}
+                      </p>
+                    </div>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="bg-red-600/80 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition"
+                  >
+                    Logout
+                  </button>
+                </div>
 
-          {/* Admin only */}
-          {isAdmin && <AdminPanel />}
-
-          {/* Upload foto */}
-          <ImageUpload />
-
-          {/* Galeri foto */}
-          <Gallery />
-
-          {/* Fitur NGL: Pesan Anonim */}
-          <MessageForm />
-          <MessageList />
-        </main>
-      </div>
-
-      <Footer />
-    </div>
+                {/* Main Content */}
+                <Home className={teacher.class} />
+                <div id="content" className="container mx-auto px-4 sm:px-6 md:px-8">
+                  <Header teacherName={teacher.name} className="Our Class" />
+                  <main>
+                    <TabsView />
+                    {isAdmin && <AdminPanel />}
+                    <ImageUpload />
+                    <Gallery />
+                  </main>
+                </div>
+                <Footer />
+              </div>
+            )
+          }
+        />
+      </Routes>
+    </Router>
   );
 }
 
 export default App;
+
 
