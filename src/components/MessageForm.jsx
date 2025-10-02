@@ -1,50 +1,76 @@
 import React, { useState } from "react";
 import { supabase } from "../supabaseClient";
+import Swal from "sweetalert2";
 
 const MessageForm = () => {
   const [message, setMessage] = useState("");
-  const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Ganti ini dengan UUID user admin (cek di tabel auth.users)
+  const ADMIN_ID = "UUID_ADMIN_DI_SINI";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim()) {
+      Swal.fire("Oops!", "Pesan tidak boleh kosong", "warning");
+      return;
+    }
 
-    const { error } = await supabase
-      .from("messages")
-      .insert([{ content: message }]);
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("messages")
+        .insert([
+          {
+            recipient_id: ADMIN_ID, // semua pesan dikirim ke admin
+            content: message,
+          },
+        ]);
 
-    if (error) {
-      setStatus("❌ Gagal mengirim pesan");
-      console.error(error);
-    } else {
-      setStatus("✅ Pesan terkirim!");
-      setMessage("");
+      if (error) throw error;
+
+      Swal.fire({
+        title: "Terkirim 🚀",
+        text: "Pesan anonimmu berhasil dikirim!",
+        icon: "success",
+        background: "#1e2b3b",
+        color: "#ffffff",
+      });
+
+      setMessage(""); // reset input
+    } catch (error) {
+      console.error("Supabase insert error:", error);
+      Swal.fire("Gagal", error.message, "error");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-gray-900/70 p-6 rounded-xl shadow-lg max-w-md mx-auto mt-8"
-    >
-      <h2 className="text-xl font-bold text-white mb-4 text-center">
+    <section className="py-8 px-4 max-w-lg mx-auto" data-aos="fade-up">
+      <h2 className="text-2xl font-bold text-center mb-6 text-white">
         Kirim Pesan Anonim ✨
       </h2>
-      <textarea
-        className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-        rows="4"
-        placeholder="Tulis pesanmu di sini..."
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-      ></textarea>
-      <button
-        type="submit"
-        className="w-full mt-4 bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg"
+      <form
+        onSubmit={handleSubmit}
+        className="bg-gray-800/50 p-6 rounded-lg shadow-md backdrop-blur-sm"
       >
-        Kirim 🚀
-      </button>
-      {status && <p className="text-center text-sm text-gray-300 mt-3">{status}</p>}
-    </form>
+        <textarea
+          rows="4"
+          placeholder="Tulis pesanmu di sini..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          className="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-cyan-500"
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="mt-4 w-full bg-cyan-500 text-white font-bold py-2 px-4 rounded-lg transition-transform duration-200 hover:scale-105 disabled:opacity-50"
+        >
+          {loading ? "Mengirim..." : "Kirim 🚀"}
+        </button>
+      </form>
+    </section>
   );
 };
 
