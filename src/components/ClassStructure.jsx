@@ -1,15 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
 import { classStructureData } from "../data";
 
-// Card jabatan utama (wali/ketua/wakil)
+// Card jabatan utama
 const RoleCard = ({ jabatan, nama, isMain = false }) => (
   <div className="flex flex-col items-center text-center z-10">
     <h3 className="text-sm text-gray-400 font-medium tracking-wider">{jabatan}</h3>
     <div
-      className={`mt-1 px-5 py-2 rounded-lg font-semibold text-base shadow-lg ${
+      className={`mt-1 px-5 py-2 rounded-lg font-semibold text-base shadow-lg transition-all duration-300 ${
         isMain
           ? "bg-white text-gray-900 shadow-cyan-500/20"
-          : "bg-gray-800/70 text-white border border-gray-700"
+          : "bg-gray-800/70 text-white border border-gray-700 hover:border-cyan-400"
       }`}
     >
       {nama}
@@ -17,7 +19,7 @@ const RoleCard = ({ jabatan, nama, isMain = false }) => (
   </div>
 );
 
-// Card seksi (bisa banyak anggota)
+// Card seksi
 const SectionCard = ({ jabatan, anggota }) => (
   <div className="flex flex-col items-center text-center w-full z-10">
     <h3 className="text-sm text-gray-400 font-medium tracking-wider">{jabatan}</h3>
@@ -31,21 +33,21 @@ const SectionCard = ({ jabatan, anggota }) => (
   </div>
 );
 
-const StrukturKelas = () => {
+const ClassStructure = () => {
+  useEffect(() => {
+    AOS.init({ duration: 800, once: true });
+  }, []);
+
   return (
-    <section className="w-full flex flex-col items-center py-12 px-4 font-sans">
+    <section className="w-full flex flex-col items-center py-12 px-4 font-sans" data-aos="fade-up">
       {/* Wali Kelas */}
-      <div className="relative mb-12">
-        <RoleCard
-          jabatan={classStructureData.waliKelas.jabatan}
-          nama={classStructureData.waliKelas.nama}
-          isMain
-        />
+      <div className="relative mb-12" data-aos="fade-down">
+        <RoleCard jabatan={classStructureData.waliKelas.jabatan} nama={classStructureData.waliKelas.nama} isMain />
         <div className="absolute top-full left-1/2 -translate-x-1/2 w-0.5 h-12 bg-gray-700" />
       </div>
 
       {/* Ketua & Wakil */}
-      <div className="w-full max-w-md relative mb-12">
+      <div className="w-full max-w-md relative mb-12" data-aos="zoom-in">
         <div className="absolute top-6 left-0 w-full h-0.5 bg-gray-700" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-6 bg-gray-700" />
         <div className="flex justify-between pt-12">
@@ -58,7 +60,7 @@ const StrukturKelas = () => {
       </div>
 
       {/* Sekretaris & Bendahara */}
-      <div className="w-full max-w-md relative mb-12">
+      <div className="w-full max-w-md relative mb-12" data-aos="zoom-in">
         <div className="absolute top-6 left-0 w-full h-0.5 bg-gray-700" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-6 bg-gray-700" />
         <div className="flex justify-between pt-12">
@@ -71,7 +73,7 @@ const StrukturKelas = () => {
       </div>
 
       {/* Seksi-seksi */}
-      <div className="w-full max-w-4xl">
+      <div className="w-full max-w-4xl" data-aos="zoom-in-up">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-12">
           {classStructureData.seksi.map((section, index) => (
             <div key={index} className="flex flex-col items-center">
@@ -84,4 +86,5 @@ const StrukturKelas = () => {
   );
 };
 
-export default StrukturKelas;
+export default ClassStructure;
+
