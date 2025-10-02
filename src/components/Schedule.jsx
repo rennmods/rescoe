@@ -1,9 +1,5 @@
-// src/components/Schedule.jsx (VERSI BARU)
-
-import React, { useState, useEffect } from 'react';
-import { dailySchedules } from '../data';
-import AOS from 'aos';    
-import 'aos/dist/aos.css';
+import React, { useState, useEffect } from "react";
+import { dailySchedules } from "../data";
 
 const Schedule = () => {
   const [todaySchedule, setTodaySchedule] = useState({
@@ -12,11 +8,6 @@ const Schedule = () => {
     piket: [],
   });
 
-  useEffect(() => {
-  AOS.init({ duration: 800, once: true });
-  AOS.refresh();
-}, []);
-  
   useEffect(() => {
     const dayIndex = (new Date().getDay() + 6) % 7; // Senin = 0
     if (dailySchedules[dayIndex]) {
