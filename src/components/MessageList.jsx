@@ -1,25 +1,34 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 
 const MessageList = () => {
   const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchMessages = async () => {
-    const { data, error } = await supabase
-      .from("messages")
-      .select("*")
-      .order("created_at", { ascending: false });
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("messages")
+        .select("id, content, created_at")
+        .order("created_at", { ascending: false });
 
-    if (error) console.error(error);
-    else setMessages(data);
+      if (error) throw error;
+
+      setMessages(data);
+    } catch (error) {
+      console.error("Error fetching messages:", error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchMessages();
 
-    // Supabase realtime untuk pesan baru
+    // Realtime update saat ada pesan baru
     const channel = supabase
-      .channel("messages_channel")
+      .channel("messages-realtime")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
@@ -34,23 +43,32 @@ const MessageList = () => {
     };
   }, []);
 
+  if (loading) {
+    return (
+      <div className="text-center text-gray-400 py-6">Memuat pesan...</div>
+    );
+  }
+
   return (
-    <section className="max-w-2xl mx-auto mt-12 px-4">
-      <h2 className="text-2xl font-bold text-white mb-6 text-center">Pesan Masuk 📩</h2>
+    <section className="py-8 px-4 max-w-2xl mx-auto" data-aos="fade-up">
+      <h2 className="text-2xl font-bold text-center mb-6 text-white">
+        Pesan Masuk 📩
+      </h2>
       <div className="space-y-4">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className="bg-gray-800/80 text-white p-4 rounded-lg shadow-md"
-          >
-            <p>{msg.content}</p>
-            <span className="text-xs text-gray-400">
-              {new Date(msg.created_at).toLocaleString()}
-            </span>
-          </div>
-        ))}
-        {messages.length === 0 && (
-          <p className="text-center text-gray-400">Belum ada pesan 🙃</p>
+        {messages.length > 0 ? (
+          messages.map((msg) => (
+            <div
+              key={msg.id}
+              className="p-4 rounded-lg bg-gray-800/70 border border-gray-700 text-white shadow-md"
+            >
+              <p className="text-gray-200">{msg.content}</p>
+              <p className="text-xs text-gray-500 mt-2">
+                {new Date(msg.created_at).toLocaleString("id-ID")}
+              </p>
+            </div>
+          ))
+        ) : (
+          <p className="text-center text-gray-400">Belum ada pesan 😶</p>
         )}
       </div>
     </section>
