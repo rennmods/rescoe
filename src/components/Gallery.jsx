@@ -58,16 +58,17 @@ const Gallery = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
           {images.map((imageUrl, idx) => (
             <div
-              key={idx}
-              className="aspect-square bg-gray-800 rounded-lg overflow-hidden cursor-pointer"
-              onClick={() => handleImageClick(idx)}
-            >
-              <img
-                src={imageUrl}
-                alt={`Kenangan Kelas ${idx + 1}`}
-                className="w-full h-full object-cover"
-              />
-            </div>
+  key={idx}
+  className="aspect-square bg-gray-800 rounded-lg overflow-hidden cursor-pointer group"
+  onClick={() => handleImageClick(idx)}
+>
+  <img
+    src={imageUrl}
+    alt={`Kenangan Kelas ${idx + 1}`}
+    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+  />
+</div>
+
           ))}
         </div>
         {images.length === 0 && (
