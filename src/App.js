@@ -128,6 +128,8 @@ function App() {
           {isAdmin && <AdminPanel />}
           <ImageUpload />
           <Gallery />
+          <MessageForm />
+          <MessageList />
         </main>
       </div>
       <Footer />
