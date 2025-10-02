@@ -17,7 +17,7 @@ const ResetPassword = () => {
       return;
     }
 
-    const { data, error } = await supabase.auth.updateUser({
+    const { error } = await supabase.auth.updateUser({
       password: password,
     });
 
@@ -70,3 +70,4 @@ const ResetPassword = () => {
 };
 
 export default ResetPassword;
+
