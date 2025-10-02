@@ -1,17 +1,7 @@
-// StrukturKelas.jsx (VERSI FINAL DENGAN GARIS YANG RAPI)
+import React from "react";
+import { classStructureData } from "../data";
 
-import React, { useEffect } from "react";
-import AOS from "aos";
-import "aos/dist/aos.css";
-// Pastikan path ke file data Anda benar
-import { classStructureData } from "../data"; 
-
-useEffect(() => {
-  AOS.init({ duration: 800, once: true });
-  AOS.refresh();
-}, []);
-
-// Komponen Card untuk setiap anggota (tidak perlu diubah)
+// Card jabatan utama (wali/ketua/wakil)
 const RoleCard = ({ jabatan, nama, isMain = false }) => (
   <div className="flex flex-col items-center text-center z-10">
     <h3 className="text-sm text-gray-400 font-medium tracking-wider">{jabatan}</h3>
