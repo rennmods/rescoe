@@ -8,6 +8,8 @@ import Home from "./components/Home";
 import Header from "./components/Header";
 import TabsView from "./components/TabsView";
 import AdminPanel from "./components/AdminPanel";
+import MessageForm from "./components/MessageForm";
+import MessageList from "./components/MessageList";
 import ImageUpload from "./components/ImageUpload";
 import Gallery from "./components/Gallery";
 import Footer from "./components/Footer";
