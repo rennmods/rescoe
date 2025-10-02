@@ -6,6 +6,11 @@ import "aos/dist/aos.css";
 // Pastikan path ke file data Anda benar
 import { classStructureData } from "../data"; 
 
+useEffect(() => {
+  AOS.init({ duration: 800, once: true });
+  AOS.refresh();
+}, []);
+
 // Komponen Card untuk setiap anggota (tidak perlu diubah)
 const RoleCard = ({ jabatan, nama, isMain = false }) => (
   <div className="flex flex-col items-center text-center z-10">
