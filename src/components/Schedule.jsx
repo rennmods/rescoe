@@ -13,6 +13,11 @@ const Schedule = () => {
   });
 
   useEffect(() => {
+  AOS.init({ duration: 800, once: true });
+  AOS.refresh();
+}, []);
+  
+  useEffect(() => {
     const dayIndex = (new Date().getDay() + 6) % 7; // Senin = 0
     if (dailySchedules[dayIndex]) {
       setTodaySchedule(dailySchedules[dayIndex]);
