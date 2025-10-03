@@ -1,57 +1,49 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../supabaseClient';
+// Hapus import supabase yang tidak digunakan
+// import { supabase } from '../supabaseClient';
 
 const SeasonalTheme = () => {
   const [theme, setTheme] = useState('default');
   const [showEffect, setShowEffect] = useState(false);
 
   useEffect(() => {
-    const checkSeason = async () => {
+    const checkSeason = () => {
       const now = new Date();
       const month = now.getMonth() + 1;
       const date = now.getDate();
 
-      let detectedTheme = 'default';
-
       // Valentine's Day (Feb 14)
       if (month === 2 && date === 14) {
-        detectedTheme = 'valentine';
+        setTheme('valentine');
       }
       // April Fool's (Apr 1)
       else if (month === 4 && date === 1) {
-        detectedTheme = 'april-fools';
+        setTheme('april-fools');
       }
       // Halloween (Oct 31)
       else if (month === 10 && date === 31) {
-        detectedTheme = 'halloween';
+        setTheme('halloween');
       }
       // Christmas (Dec 15-31)
       else if (month === 12 && date >= 15) {
-        detectedTheme = 'christmas';
+        setTheme('christmas');
       }
       // New Year (Dec 31 - Jan 2)
       else if ((month === 12 && date === 31) || (month === 1 && date <= 2)) {
-        detectedTheme = 'new-year';
+        setTheme('new-year');
       }
-      // Class Anniversary
-      else if (month === 8 && date === 17) {
-        detectedTheme = 'anniversary';
+      // Class Anniversary (Ganti dengan tanggal penting kelas)
+      else if (month === 8 && date === 17) { // Contoh: 17 Agustus
+        setTheme('anniversary');
       }
-
-      setTheme(detectedTheme);
-
-      // Simpan theme preference ke Supabase (opsional)
-      try {
-        await supabase
-          .from('theme_logs')
-          .insert([{ theme: detectedTheme, detected_at: new Date().toISOString() }]);
-      } catch (error) {
-        console.log('Theme logging optional:', error.message);
+      else {
+        setTheme('default');
       }
     };
 
     checkSeason();
     
+    // Trigger effect animation
     setShowEffect(true);
     const timer = setTimeout(() => setShowEffect(false), 3000);
 
@@ -108,8 +100,10 @@ const SeasonalTheme = () => {
 
   return (
     <>
+      {/* Seasonal Gradient Overlay */}
       <div className={`fixed inset-0 bg-gradient-to-br ${themeConfig.gradient} opacity-20 pointer-events-none z-0`} />
       
+      {/* Seasonal Particles */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         {[...Array(15)].map((_, i) => (
           <div 
@@ -125,6 +119,7 @@ const SeasonalTheme = () => {
         ))}
       </div>
 
+      {/* Seasonal Notification */}
       {showEffect && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-bounce">
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-6 py-4 shadow-2xl">
