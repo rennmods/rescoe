@@ -25,7 +25,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState(null);
   const [view, setView] = useState("login");
-  const [onlineCount, setOnlineCount] = useState(0);
+  const [onlineCount, setOnlineCount] = useState(0); // Tetap digunakan
 
   // Optimized session setup dengan useCallback
   const setupSession = useCallback(async () => {
@@ -37,6 +37,9 @@ function App() {
         setUserEmail(session.user.email);
         await checkIfAdmin(session.user.id);
         setView("main");
+        
+        // Setup presence tracking
+        setupPresenceTracking(session.user.id);
       }
     } catch (error) {
       console.error("Session setup error:", error);
@@ -44,6 +47,16 @@ function App() {
       setLoading(false);
     }
   }, []);
+
+  const setupPresenceTracking = (userId) => {
+    // Simple online counter - simpan ke localStorage atau state
+    const currentUsers = JSON.parse(localStorage.getItem('onlineUsers') || '[]');
+    if (!currentUsers.includes(userId)) {
+      currentUsers.push(userId);
+      localStorage.setItem('onlineUsers', JSON.stringify(currentUsers));
+    }
+    setOnlineCount(currentUsers.length);
+  };
 
   const checkIfAdmin = async (userId) => {
     try {
@@ -79,6 +92,7 @@ function App() {
           setUserEmail(session.user.email);
           await checkIfAdmin(session.user.id);
           setView("main");
+          setupPresenceTracking(session.user.id);
         } else {
           setIsAdmin(false);
           setUserEmail(null);
@@ -92,9 +106,16 @@ function App() {
   }, [setupSession]);
 
   const handleLogout = async () => {
+    // Remove from online users
+    if (session) {
+      const currentUsers = JSON.parse(localStorage.getItem('onlineUsers') || '[]');
+      const updatedUsers = currentUsers.filter(id => id !== session.user.id);
+      localStorage.setItem('onlineUsers', JSON.stringify(updatedUsers));
+      setOnlineCount(updatedUsers.length);
+    }
+    
     setLoading(true);
     await supabase.auth.signOut();
-    // Tidak perlu reload, biarkan onAuthStateChange handle
   };
 
   // Tampilkan loading dengan timeout fallback
@@ -105,13 +126,6 @@ function App() {
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-cyan-400 mx-auto mb-4"></div>
           <p className="text-xl font-semibold">Loading Rescoe Republika...</p>
           <p className="text-gray-400 mt-2">Mempersiapkan pengalaman terbaik</p>
-          {/* Fallback jika loading terlalu lama */}
-          <button 
-            onClick={() => window.location.reload()}
-            className="mt-4 text-cyan-400 hover:text-cyan-300 text-sm"
-          >
-            Refresh jika loading lama
-          </button>
         </div>
       </div>
     );
@@ -129,7 +143,7 @@ function App() {
         
         {/* Floating Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(10)].map((_, i) => ( // Kurangi jumlah particles
+          {[...Array(10)].map((_, i) => (
             <div 
               key={i}
               className="absolute w-1 h-1 bg-cyan-400 rounded-full opacity-30 animate-float"
@@ -145,20 +159,31 @@ function App() {
 
         {/* Online Users & User Info */}
         <div className="absolute top-6 right-6 z-50 flex flex-col items-end space-y-3">
-          {userEmail && (
-            <div className="bg-gray-800/70 px-4 py-2 rounded-xl text-sm shadow-lg backdrop-blur-sm border border-gray-700/50">
-              <p className="text-white font-medium truncate max-w-xs">{userEmail}</p>
-              <p className={`font-bold text-xs ${isAdmin ? 'text-cyan-400' : 'text-green-400'}`}>
-                {isAdmin ? "👑 Admin" : "⭐ Member"}
-              </p>
+          <div className="flex items-center space-x-4">
+            {/* Tampilkan online count */}
+            <div className="bg-green-500/20 px-3 py-1 rounded-full flex items-center space-x-2">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium">{onlineCount} Online</span>
             </div>
-          )}
+            
+            {userEmail && (
+              <div className="bg-gray-800/70 px-4 py-2 rounded-xl text-sm shadow-lg backdrop-blur-sm border border-gray-700/50">
+                <p className="text-white font-medium truncate max-w-xs">{userEmail}</p>
+                <p className={`font-bold text-xs ${isAdmin ? 'text-cyan-400' : 'text-green-400'}`}>
+                  {isAdmin ? "👑 Admin" : "⭐ Member"}
+                </p>
+              </div>
+            )}
+          </div>
           
           <button
             onClick={handleLogout}
             className="bg-red-600/80 hover:bg-red-700 hover:scale-105 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition-all duration-200 flex items-center space-x-2 group"
           >
             <span>Logout</span>
+            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
           </button>
         </div>
 
