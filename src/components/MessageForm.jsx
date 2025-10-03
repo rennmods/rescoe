@@ -7,7 +7,7 @@ const MessageForm = () => {
   const [loading, setLoading] = useState(false);
 
   // Ganti ini dengan UUID user admin (cek di tabel auth.users)
-  const ADMIN_ID = "UUID_ADMIN_DI_SINI";
+  const ADMIN_ID = "7b1ec8ee-631d-4643-9024-dc8a2f2c5dfa";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
