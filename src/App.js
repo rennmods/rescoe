@@ -22,11 +22,9 @@ import { teacher } from "./data";
 function App() {
   const [session, setSession] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState(null);
   const [view, setView] = useState("login");
 
-  // Optimized session setup dengan useCallback
   const setupSession = useCallback(async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -39,8 +37,7 @@ function App() {
       }
     } catch (error) {
       console.error("Session setup error:", error);
-    } finally {
-      setLoading(false);
+      setView("login");
     }
   }, []);
 
@@ -53,7 +50,6 @@ function App() {
         .single();
 
       if (error && error.code !== "PGRST116") throw error;
-
       setIsAdmin(!!(data && data.role === "admin"));
     } catch (error) {
       console.error("Error checking admin status:", error);
@@ -63,14 +59,13 @@ function App() {
 
   useEffect(() => {
     AOS.init({ 
-      duration: 1000, 
+      duration: 800, 
       once: true,
       offset: 50
     });
 
     setupSession();
 
-    // Auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
@@ -83,7 +78,6 @@ function App() {
           setUserEmail(null);
           setView("login");
         }
-        setLoading(false);
       }
     );
 
@@ -91,30 +85,10 @@ function App() {
   }, [setupSession]);
 
   const handleLogout = async () => {
-    setLoading(true);
     await supabase.auth.signOut();
   };
 
-  // Tampilkan loading dengan timeout fallback
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center text-white">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-cyan-400 mx-auto mb-4"></div>
-          <p className="text-xl font-semibold">Loading Rescoe Republika...</p>
-          <p className="text-gray-400 mt-2">Mempersiapkan pengalaman terbaik</p>
-          {/* Fallback jika loading terlalu lama */}
-          <button 
-            onClick={() => window.location.reload()}
-            className="mt-4 text-cyan-400 hover:text-cyan-300 text-sm"
-          >
-            Refresh jika loading lama
-          </button>
-        </div>
-      </div>
-    );
-  }
-
+  // Langsung render konten berdasarkan view tanpa loading
   if (!session) {
     if (view === "reset") return <ResetPassword onBack={() => setView("login")} />;
     return <LoginPage onForgotPassword={() => setView("reset")} />;
@@ -127,15 +101,15 @@ function App() {
         
         {/* Floating Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(10)].map((_, i) => (
+          {[...Array(6)].map((_, i) => (
             <div 
               key={i}
-              className="absolute w-1 h-1 bg-cyan-400 rounded-full opacity-30 animate-float"
+              className="absolute w-1 h-1 bg-cyan-400 rounded-full opacity-20 animate-float"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 5}s`,
-                animationDuration: `${10 + Math.random() * 20}s`
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${8 + Math.random() * 10}s`
               }}
             />
           ))}
@@ -144,8 +118,8 @@ function App() {
         {/* User Info & Logout */}
         <div className="absolute top-6 right-6 z-50 flex flex-col items-end space-y-3">
           {userEmail && (
-            <div className="bg-gray-800/70 px-4 py-2 rounded-xl text-sm shadow-lg backdrop-blur-sm border border-gray-700/50">
-              <p className="text-white font-medium truncate max-w-xs">{userEmail}</p>
+            <div className="bg-gray-800/70 px-4 py-2 rounded-xl text-sm shadow-lg backdrop-blur-sm border border-gray-700/50 max-w-xs">
+              <p className="text-white font-medium truncate">{userEmail}</p>
               <p className={`font-bold text-xs ${isAdmin ? 'text-cyan-400' : 'text-green-400'}`}>
                 {isAdmin ? "👑 Admin" : "⭐ Member"}
               </p>
