@@ -127,6 +127,9 @@ const AdminPanel = () => {
 
       {/* Bagian Manajemen User */}
       <UserManagement />
+      
+      {/* Bagian Promote to Admin */}
+      <PromoteToAdmin />
     </div>
   );
 };
@@ -182,19 +185,25 @@ const UserManagement = () => {
             {users.map((u) => (
               <tr key={u.id} className="border-b border-gray-600">
                 <td className="py-2 px-3">{u.email}</td>
-                <td className="py-2 px-3 capitalize">{u.role}</td>
+                <td className="py-2 px-3 capitalize">
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    u.role === 'admin' ? 'bg-cyan-500/20 text-cyan-400' : 'bg-gray-500/20 text-gray-400'
+                  }`}>
+                    {u.role}
+                  </span>
+                </td>
                 <td className="py-2 px-3">
                   {u.role !== 'admin' ? (
                     <button
                       onClick={() => updateRole(u.id, 'admin')}
-                      className="bg-green-600 px-3 py-1 rounded hover:bg-green-700 transition"
+                      className="bg-green-600 px-3 py-1 rounded hover:bg-green-700 transition text-sm"
                     >
                       Jadikan Admin
                     </button>
                   ) : (
                     <button
                       onClick={() => updateRole(u.id, 'user')}
-                      className="bg-yellow-600 px-3 py-1 rounded hover:bg-yellow-700 transition"
+                      className="bg-yellow-600 px-3 py-1 rounded hover:bg-yellow-700 transition text-sm"
                     >
                       Turunkan ke User
                     </button>
@@ -205,6 +214,80 @@ const UserManagement = () => {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+};
+
+const PromoteToAdmin = () => {
+  const [email, setEmail] = useState('');
+  const [promoting, setPromoting] = useState(false);
+
+  const handlePromote = async () => {
+    if (!email) {
+      Swal.fire('Oops!', 'Email tidak boleh kosong', 'warning');
+      return;
+    }
+    
+    setPromoting(true);
+    try {
+      // Cari user by email
+      const { data: users, error: userError } = await supabase
+        .from('profiles')
+        .select('id, email')
+        .eq('email', email);
+
+      if (userError) throw userError;
+
+      if (users.length === 0) {
+        Swal.fire('Oops!', 'User tidak ditemukan!', 'error');
+        return;
+      }
+
+      const userId = users[0].id;
+
+      // Update role ke admin
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ role: 'admin' })
+        .eq('id', userId);
+
+      if (updateError) throw updateError;
+
+      Swal.fire('Berhasil!', 'User berhasil di-promote menjadi admin!', 'success');
+      setEmail('');
+    } catch (error) {
+      console.error('Error promoting user:', error);
+      Swal.fire('Oops!', 'Gagal promote user: ' + error.message, 'error');
+    } finally {
+      setPromoting(false);
+    }
+  };
+
+  return (
+    <div className="p-6 bg-gray-800/50 rounded-lg backdrop-blur-sm">
+      <h3 className="text-xl font-bold text-white mb-4">Promote User to Admin</h3>
+      <div className="flex gap-4 items-end">
+        <div className="flex-1">
+          <label className="block text-gray-400 text-sm mb-2">Email User</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Masukkan email user"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500"
+          />
+        </div>
+        <button
+          onClick={handlePromote}
+          disabled={promoting || !email}
+          className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+        >
+          {promoting ? 'Promoting...' : 'Promote to Admin'}
+        </button>
+      </div>
+      <p className="text-gray-400 text-sm mt-2">
+        💡 Masukkan email user yang ingin dijadikan admin
+      </p>
     </div>
   );
 };
