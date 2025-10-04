@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-// Hapus import supabase yang tidak digunakan
-// import { supabase } from '../supabaseClient';
+// Import supabase dihapus karena tidak digunakan
 
 const SeasonalTheme = () => {
   const [theme, setTheme] = useState('default');
